@@ -1,0 +1,58 @@
+package com.rubypaper.board.security;
+
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.context.annotation.Bean;
+import org.springframework.security.config.annotation.web.builders.HttpSecurity;
+import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
+import org.springframework.security.web.SecurityFilterChain;
+
+@EnableWebSecurity
+public class SecurityConfig {
+	@Autowired
+	private SecurityUserDetailsService userDetailsService;
+	
+	/*
+	 * @Override protected void configure(HttpSecurity security) throws Exception {
+	 * security.userDetailsService(userDetailsService);
+	 * 
+	 * security.authorizeRequests().antMatchers("/","/system/**").permitAll();
+	 * security. }
+	 */
+	 @Bean
+	 SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
+		 
+		 http.authorizeHttpRequests(security->security
+				 .requestMatchers("/","/system/**").permitAll()
+				 .requestMatchers("/board/**").authenticated()
+				 .requestMatchers("/admin/**").hasRole("ADMIN")
+				 .anyRequest().permitAll());
+		 	 
+		 http.formLogin(login -> login
+			        .loginPage("/system/login")
+			        .defaultSuccessUrl("/board/getBoardList", true)
+			        .permitAll());
+		 
+		 http.exceptionHandling(ex -> ex
+			        .accessDeniedPage("/system/accessDenied"));
+		 
+		 http.logout(logout -> logout
+			        .logoutUrl("/system/logout")
+			        .invalidateHttpSession(true)
+			        .logoutSuccessUrl("/"));
+		 
+		 http.csrf(cf->cf.disable());
+		 
+		 
+			/*
+			 * security.formLogin().loginPage("system/login").defaultSuccessUrl(
+			 * "/board/getBoardList",true);
+			 * security.exceptionHandling().accessDeniedPage("/system/accessDenied");
+			 * security.logout().logoutUrl("/system/logout").invalidateHttpSession(true).
+			 * logoutSuccessUrl("/");
+			 */
+		 
+		 
+		 return http.build();
+	 }
+
+}

@@ -1,0 +1,8 @@
+package edu.pnu.config;
+
+public class OAuth2SuccessHandler extends SimpleUrlAuthenticationSuccessHandler{
+	@SuppressWarnings("unchecked")
+	Map<String, string> getUserInfo(Authentication authentication){
+		
+	}
+}

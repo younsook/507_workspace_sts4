@@ -1,0 +1,25 @@
+package com.rubypaper.config;
+
+import org.springframework.context.annotation.Bean;
+import org.springframework.context.annotation.Configuration;
+import org.springframework.security.config.annotation.web.builders.HttpSecurity;
+import org.springframework.security.web.SecurityFilterChain;
+
+@Configuration
+public class SecurityConfig {
+	@Bean
+	SecurityFilterChain filterChain(HttpSecurity http) throws Exception{
+		
+		http.csrf(csrf->csrf.disable());
+		
+		http.authorizeHttpRequests(auth->auth
+				.requestMatchers("/member/**").authenticated()
+				.requestMatchers("/manager/**").hasAnyAuthority("MANAGER","ADMIN")
+				.requestMatchers("/admin/**").hasRole("ADMIN")
+				.anyRequest().permitAll());
+		
+		http.formLogin(login->login.loginPage("/login").defaultSuccessUrl("/loginSuccess"));
+		
+		return http.build();
+	}
+}

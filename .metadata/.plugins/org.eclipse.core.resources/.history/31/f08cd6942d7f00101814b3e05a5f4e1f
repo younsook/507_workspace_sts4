@@ -1,0 +1,61 @@
+package edu.pnu.util;
+
+import java.io.IOException;
+import java.util.Optional;
+
+import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.authority.AuthorityUtils;
+import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.security.core.userdetails.User;
+import org.springframework.web.filter.OncePerRequestFilter;
+
+import edu.pnu.domain.Member;
+import edu.pnu.persistence.MemberRepository;
+import jakarta.servlet.FilterChain;
+import jakarta.servlet.ServletException;
+import jakarta.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpServletResponse;
+import lombok.RequiredArgsConstructor;
+
+@RequiredArgsConstructor
+public class JWTAuthorizationFilter  extends OncePerRequestFilter{
+	 private final MemberRepository memberRepo;
+	 @Override
+	 protected void doFilterInternal(HttpServletRequest request,
+			 HttpServletResponse response, FilterChain filterChain) throws ServletException, IOException {
+		 
+		 String jwtToken = request.getHeader("Authorization");
+		 System.out.println("jwtToken:"+ jwtToken);
+		 if(jwtToken == null || jwtToken.startsWith("Bearer ")) {
+			 filterChain.doFilter(request, response);
+			 return;
+		 }
+		 User user = null;
+		 String username = JWTUtil.getClaim(jwtToken, JWTUtil.usernameClaim);
+		 if (username != null) {
+			System.out.println("username:" + username);
+			Optional<Member> opt= memberRepo.findById(username);
+			if (!opt.isPresent()) {
+				 System.out.println("===>not found user!");
+				 filterChain.doFilter(request, response);
+				 return;
+			}
+			Member member = opt.get();
+			System.out.println("===>member:" + member);
+			// DB에서읽은사용자정보를이용해서UserDetails타입의객체를만들어서
+			user = new User(member.getUsername(), member.getPassword(), member.getAuthorities());
+		 } else {
+			 String provider = JWTUtil.getClaim(jwtToken, JWTUtil.providerClaim);
+			 String email = JWTUtil.getClaim(jwtToken, JWTUtil.emailClaim);
+			 System.out.println("username:" + provider + "_" + email);
+			 user = new User(provider + "_"+ email, "abcd", AuthorityUtils.createAuthorityList("ROLE_USER"));
+		}
+		 // Authentication 객체를생성: 사용자명과권한관리를위한정보를입력
+		 Authentication auth= new UsernamePasswordAuthenticationToken(user, null, user.getAuthorities());
+		 
+		 // 시큐리티세션에등록한다.
+		 SecurityContextHolder.getContext().setAuthentication(auth);
+		 filterChain.doFilter(request, response);
+	 }
+}

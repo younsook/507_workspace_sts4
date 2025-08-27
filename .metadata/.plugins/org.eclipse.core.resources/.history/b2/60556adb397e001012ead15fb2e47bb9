@@ -1,0 +1,115 @@
+package edu.pnu.config.filter;
+
+
+import java.io.IOException;
+import java.util.Optional;
+
+import org.springframework.http.HttpHeaders;
+import org.springframework.http.HttpStatus;
+import org.springframework.security.authentication.AuthenticationManager;
+import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.AuthenticationException;
+import org.springframework.security.core.authority.AuthorityUtils;
+import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.security.core.userdetails.User;
+import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
+import org.springframework.web.filter.OncePerRequestFilter;
+
+import com.fasterxml.jackson.databind.ObjectMapper;
+
+import edu.pnu.domain.Member;
+import edu.pnu.persistence.MemberRepository;
+import edu.pnu.util.JWTUtil;
+import jakarta.servlet.FilterChain;
+import jakarta.servlet.ServletException;
+import jakarta.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpServletResponse;
+import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
+
+@Slf4j
+@RequiredArgsConstructor
+public class JWTAuthenticationFilter extends UsernamePasswordAuthenticationFilter {
+	private final AuthenticationManager authenticationManager; // 인증을 실행하는 객체
+	 
+	// POST/login 요청이 왔을 때 인증을 시도하는 메소드
+	@Override
+	public Authentication attemptAuthentication(HttpServletRequest request, HttpServletResponse response)
+			 							throws AuthenticationException {
+		
+		// request에서 json 타입의 [username/password]를 읽어서 Member 객체를 생성한다.
+		 ObjectMapper mapper = new ObjectMapper();
+		 try {
+			Member member = mapper.readValue(request.getInputStream(), Member.class);
+			// Security에게 자격 증명 요청에 필요한 객체 생성
+			Authentication authToken = new UsernamePasswordAuthenticationToken(
+					 member.getUsername(), member.getPassword());
+			// 인증 진행-> UserDetailsService의 loadUserByUsername에서 DB로부터 사용자 정보를 읽어온 뒤
+			// 사용자 입력 정보와 비교한 뒤 자격 증명에 성공하면 Authenticaiton객체를 만들어서 리턴한다.
+			return authenticationManager.authenticate(authToken);
+		 }catch (Exception e) {
+			 log.info(e.getMessage()); // 예외 발생 로그 출력
+			 response.setStatus(HttpStatus.UNAUTHORIZED.value());  // 자격 증명에 실패하면 응답코드 리턴
+		 }
+		 
+		return null;
+	}
+	// 인증이 성공했을 때 실행되는 후처리 메소드
+	@Override
+	protected void successfulAuthentication(HttpServletRequest request, HttpServletResponse response, FilterChain chain, 
+			 Authentication authResult) throws IOException, ServletException {
+		// 자격 증명이 성공하면 loadUserByUsername에서 만든 객체가 authResult에 담겨져 있다.
+		User user = (User)authResult.getPrincipal();
+		System.out.println("auth:" + user); // user 객체를 콘솔에 출력해서 확인
+		 
+		// username으로 JWT를 생성한다. 이것은 하나의 예시로서 필요에 따라 추가 정보를 담을 수 있다.
+		String token = JWTUtil.getJWT(user.getUsername());
+		
+		// Response Header[Authorization]에 JWT를 저장해서 응답한다.
+		response.addHeader(HttpHeaders.AUTHORIZATION, token);
+		response.setStatus(HttpStatus.OK.value());
+	} 
+	 
+}
+
+@RequiredArgsConstructor
+public class JWTAuthorizationFilter extends OncePerRequestFilter {  // 하나의 요청에 대해 필터를 한번만 거치도록 OncePerRequestFilter상속
+	private final MemberRepository memberRepository; // 인가 설정을 위해 사용자의 Role 정보를 읽어 들이기 위한 객체 설정
+	
+	@Override
+	 protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain filterChain)
+			 						throws IOException, ServletException {
+		
+		String srcToken = request.getHeader(HttpHeaders.AUTHORIZATION); // 요청 헤더에서 Authorization을 얻어온다.
+		if (srcToken == null || !srcToken.startsWith("Bearer ")) {  // 없거나 "Bearer "로 시작하지 않는다면
+			 filterChain.doFilter(request, response); // 필터를 그냥 통과
+			 return;
+		}
+		String jwtToken = srcToken.replace("Bearer ", ""); // 토큰에서 "Bearer "를 제거
+		
+		// 토큰에서 username 추출
+		String username = JWTUtil.getClaim(jwtToken);
+		Optional<Member> opt = memberRepository.findById(username); // 토큰에서 얻은 username으로 DB를 검색해서 사용자를 검색
+		if (!opt.isPresent()) { // 사용자가 존재하지 않는다면
+			 filterChain.doFilter(request, response); // 필터를 그냥 통과
+			 return;
+		}
+		Member findmember = opt.get();
+		
+		User user = new User(findmember.getUsername(), findmember.getPassword(),
+				 AuthorityUtils.createAuthorityList(findmember.getRole().toString())); // UserDetails 타입 객체 생성
+		
+		// Authentication 객체를 생성 : 사용자명과 권한 관리를 위한 정보를 입력(암호는 필요 없음)
+		Authentication auth = new UsernamePasswordAuthenticationToken(user, null, user.getAuthorities());
+		// 시큐리티 세션에 등록한다.
+		SecurityContextHolder.getContext().setAuthentication(auth);
+		// SecurityFilterChain의 다음 필터로 이동
+		filterChain.doFilter(request, response);		 
+		 
+		
+		
+	}
+	
+}
+

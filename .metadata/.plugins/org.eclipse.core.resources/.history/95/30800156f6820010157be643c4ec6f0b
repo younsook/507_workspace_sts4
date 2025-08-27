@@ -1,0 +1,5 @@
+package com.rubypaper.board.security;
+
+public class SecurityUserDetailsService {
+
+}

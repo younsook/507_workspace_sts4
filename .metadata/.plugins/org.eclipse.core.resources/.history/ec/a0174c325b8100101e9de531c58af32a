@@ -1,0 +1,17 @@
+package edu.pnu.util;
+
+public class JWTUtil {
+	private static final long ACCESS_TOKEN_MSEC = 24 * 60 * (60 * 1000); //1일
+	private static final String JWT_KEY = "edu.pnu.jwtkey";
+	
+	public static final String prefix = "Bearer ";
+	public static final String usernameClaim = "username";
+	public static final String providerClaim = "provider";
+	public static final String emailClaim = "email";
+	
+	private static String getJWTSource(String token) {
+		if(token.startsWith(perfix)) return token.replace(prefix, "");
+		return token;
+	}
+	
+}

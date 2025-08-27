@@ -1,0 +1,39 @@
+package edu.pnu.util;
+
+import java.util.Map;
+
+import org.springframework.security.oauth2.core.user.OAuth2User;
+
+public class CustomMyUtil {
+	// OAuth2User 정보를이용해서임의의사용자아이디를생성하는메소드
+	// 인증서버를추가하려면이메서드수정
+	@SuppressWarnings("unchecked")
+	public static String getUsernameFromOAuth2User(OAuth2User user) {
+		
+		// 로그인성공후인증서버에서보내준속성정보추출
+		Map<String,Object> attmap= user.getAttributes();
+		String userString= (String)user.toString();
+		
+		String ret= null;
+		
+		if(userString.contains("googleapis.com")) {
+			ret= "Google_"+ attmap.get("name") + "_"+ attmap.get("sub");
+		} else if(userString.contains("github.com")) {
+			ret= "Github_"+ attmap.get("login") + "_"+ attmap.get("id");
+		} else if(userString.contains("facebook.com")) {
+			ret= "Facebook_"+ attmap.get("name") + "_"+ attmap.get("id");
+		} else if(userString.contains("response=")) {
+			Map<String,Object> map= (Map<String,Object>)attmap.get("response");
+			ret= "Naver_"+ map.get("name") + "_"+ map.get("id");
+		} else if(userString.contains("kakaocdn.net")) {
+			Map<String, String> pmap= (Map<String, String>)attmap.get("properties");
+			ret= "Kakao_"+ map.get("nickname") + "_"+ attmap.get("id");
+		}
+		
+		 // ret가 null이 아니면",", " "(공백)를제거
+		if(ret!= null) {
+			ret= ret.replaceAll(",", "_").replaceAll(" ", "_");
+		}
+		 return ret;
+	}
+}

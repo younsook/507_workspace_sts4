@@ -1,0 +1,22 @@
+package edu.pnu.config.filter;
+
+import org.hibernate.service.spi.ServiceException;
+import org.springframework.web.filter.OncePerRequestFilter;
+
+import edu.pnu.persistence.MemberRepository;
+import jakarta.servlet.FilterChain;
+import jakarta.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpServletResponse;
+import lombok.RequiredArgsConstructor;
+
+@RequiredArgsConstructor
+public class JWTAuthorizationFilter extends OncePerRequestFilter {
+	private final MemberRepository memberRepository;
+	
+	@Override
+	protected void doFilterInternal(HttpServletRequest request, 
+			HttpServletResponse response, FilterChain filterChain) throws IOException, ServiceException{
+		
+		String jwtToken = request.getHeader(HttpHeaders.AUTHORIZATION);
+	}
+}

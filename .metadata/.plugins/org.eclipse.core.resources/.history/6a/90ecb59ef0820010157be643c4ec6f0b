@@ -1,0 +1,13 @@
+<!DOCTYPE html>
+<html xmlns:th="http://thymeleaf.org">
+<head>
+<meta charset="UTF-8">
+<title>새 글 등록</title>
+<meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+</head>
+<body th:align="center">
+<h1>게시글 등록</h1>
+<form th:action="@{/board/insertBoard}" method="post">
+</form>
+</body>
+</html>

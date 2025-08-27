@@ -1,0 +1,49 @@
+package edu.pnu.config;
+
+import org.springframework.context.annotation.Bean;
+import org.springframework.context.annotation.Configuration;
+import org.springframework.security.config.annotation.authentication.configuration.AuthenticationConfiguration;
+import org.springframework.security.config.annotation.web.builders.HttpSecurity;
+import org.springframework.security.config.http.SessionCreationPolicy;
+import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
+import org.springframework.security.crypto.password.PasswordEncoder;
+import org.springframework.security.web.SecurityFilterChain;
+
+import lombok.RequiredArgsConstructor;
+
+@Configuration
+@RequiredArgsConstructor
+public class SecurityConfig {
+	@Bean
+	PasswordEncoder passwordEncoder() {
+		return new BCryptPasswordEncoder();
+	}
+	
+	//시큐리티 인증 필터 등록
+	private final AuthenticationConfiguration authenticationConfiguration;
+	
+	@Bean
+	SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
+		// CSRF 보호비활성화(CsrfFilter제거)
+		http.csrf(csrf->csrf.disable());
+		http.authorizeHttpRequests(auth->auth
+			.requestMatchers("/member/**").authenticated()
+			.requestMatchers("/manager/**").hasAnyRole("MANAGER","ADMIN")
+			.requestMatchers("/admin/**").hasRole("ADMIN")
+			.anyRequest().permitAll());  // AuthorizationFilter등록
+		
+		// Form을 이용한 로그인을 사용하지 않겠다는 명시적 설정
+		// UsernamePasswordAuthenticationFilter가 현재 없지만 명시적 제거	
+		http.formLogin(frmLogin->frmLogin.disable());
+		
+		// HttpBasic인증 방식을 사용하지 않겠다는 명시적 설정
+		// BasicAuthenticationFilter가 현재 없지만 명시적 제거
+		http.httpBasic(basic->basic.disable());
+		
+		// 세션을 유지하지 않겠다고 설정(SessionManagementFilter 등록)
+		//Url 호출 뒤 응답할 때 까지는 유지되지만 응답 후 삭제
+		http.sessionManagement(sm->sm.sessionCreationPolicy(SessionCreationPolicy.STATELESS));
+		
+		return http.build();
+	} 
+}

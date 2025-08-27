@@ -1,0 +1,4 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<session version="1.0">
+<refactoring comment="Copy 2 packages to &apos;Chapter03-1/src/main/java&apos;&#x0D;&#x0A;- Original project: &apos;Chapter01&apos;&#x0D;&#x0A;- Destination element: &apos;Chapter03-1/src/main/java&apos;&#x0D;&#x0A;- Original elements:&#x0D;&#x0A;     Chapter01/src/main/java/com.rubypaper.domain&#x0D;&#x0A;     Chapter01/src/main/java/com.rubypaper.controller" description="Copy packages" destination="=Chapter03-1/src\/main\/java=/optional=/true=/=/maven.pomderived=/true=/" element1="/src\/main\/java=/optional=/true=/=/maven.pomderived=/true=/&lt;com.rubypaper.domain" element2="/src\/main\/java=/optional=/true=/=/maven.pomderived=/true=/&lt;com.rubypaper.controller" flags="589830" fragments="2" id="org.eclipse.jdt.ui.copy" policy="org.eclipse.jdt.ui.copyPackages" stamp="1753921958513" version="1.0"/>
+</session>

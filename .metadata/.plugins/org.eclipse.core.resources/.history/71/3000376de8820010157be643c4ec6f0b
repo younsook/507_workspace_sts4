@@ -1,0 +1,9 @@
+package com.rubypaper.board.service;
+
+import com.rubypaper.board.domain.Board;
+
+public interface BoardService {
+	void insertBoard(Board board);
+	void updateBoard(Board board);
+	void deleteBoard(Board board);
+}

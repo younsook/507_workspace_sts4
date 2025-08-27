@@ -1,0 +1,5 @@
+package com.rubypaper.board.persistence;
+
+public interface BoardRepository {
+
+}

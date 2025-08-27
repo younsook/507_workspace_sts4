@@ -1,0 +1,40 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="UTF-8">
+<title>Login</title>
+<link rel="stylesheet" href="./css/login.css">
+<script>
+ async function loginButton() {
+ const username = document.getElementById("username").value;
+ const password = document.getElementById("password").value;
+ try {
+ const response = await fetch("/login", {
+ method: "POST",
+ headers: {
+ "Content-Type": "application/json"
+ },
+ body: JSON.stringify({ username, password })
+ });
+ if (response.ok) {
+ const jwtToken = response.headers.get('Authorization');
+ if (jwtToken) {
+ sessionStorage.setItem('jwtToken', jwtToken);
+ alert("로그인성공!");
+ window.location.href= "./welcome.html"; 
+return;
+ }
+ else alert("로그인실패![토큰생성실패]");
+ }
+ else alert("로그인실패!");
+ } catch(error) {
+	 alert("로그인오류!");
+	 }
+	 window.location.href= "./login.html"; 
+	}
+	 </script>
+</head>
+<body>
+
+</body>
+</html>

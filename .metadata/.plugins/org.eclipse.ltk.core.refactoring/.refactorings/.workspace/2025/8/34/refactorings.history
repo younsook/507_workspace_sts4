@@ -1,0 +1,3 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<session version="1.0">&#x0A;<refactoring comment="Copy Project &apos;SpringBootSecurityJWT&apos;" description="Copy Project &apos;SpringBootSecurityJWT&apos;" destination="E:/workspace_sts4" element="/SpringBootSecurityJWT" flags="7" id="org.eclipse.ltk.core.refactoring.copyproject.resource" name="SpringBootSecurityJWTOAuth2" stamp="1755745428650"/>&#x0A;<refactoring comment="Copy Project &apos;SpringBootSecurityJWTOAuth2&apos;" description="Copy Project &apos;SpringBootSecurityJWTOAuth2&apos;" destination="E:/workspace_sts4" element="/SpringBootSecurityJWTOAuth2" flags="7" id="org.eclipse.ltk.core.refactoring.copyproject.resource" name="SpringBootSecurityJWTOAuth2_2" stamp="1755844202700"/>
+</session>

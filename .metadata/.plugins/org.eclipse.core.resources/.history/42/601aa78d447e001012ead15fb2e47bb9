@@ -1,0 +1,16 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="UTF-8">
+<title>Insert title here</title>
+</head>
+<body>
+<h2>로그인</h2>
+<form action="/login" method="post">
+	<table align="center">
+		<tr><td>username:</td><td><input type="text" name="username" placeholder="username" /></td></tr>
+		<tr><td>password:</td><td><input type="password" name="password" placeholder="password" /></td></tr>
+	</table>
+</form>
+</body>
+</html>
